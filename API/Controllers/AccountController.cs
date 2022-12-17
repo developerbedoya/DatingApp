@@ -51,7 +51,9 @@ public class AccountController : BaseApiController
     [HttpPost("login")]
     public async Task<ActionResult<UserDTO>> Login(LoginDTO loginDTO)
     {
-        var user = await _context.Users.SingleOrDefaultAsync(u => 
+        var user = await _context.Users
+            .Include(u => u.Photos)
+            .SingleOrDefaultAsync(u => 
             u.UserName == loginDTO.Username);
 
         if (user == null)
@@ -74,7 +76,8 @@ public class AccountController : BaseApiController
         return new UserDTO
         {
             Username = user.UserName,
-            Token = _tokenService.CreateToken(user)
+            Token = _tokenService.CreateToken(user),
+            PhotoUrl = user.Photos.FirstOrDefault(p => p.IsMain)?.Url
         };
     }
 
